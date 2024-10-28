@@ -2,15 +2,14 @@
 
 namespace App\Models\Trait;
 
+use App\Services\CommonFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Modules\Common\Entities\Language;
-use Modules\Common\Infrastructure\Services\Filter\CommonFilter;
 
 trait HasCommonFilter
 {
-    public function scopeFilter(Builder $builder, Request $request): Builder
+    public function scopeFilter(Builder $builder): Builder
     {
-        return CommonFilter::build($request, $this->filters, $this->mapFilter, self::$jsonFields)->filter($builder);
+        return CommonFilter::build(request(), $this->filters)->filter($builder);
     }
 }

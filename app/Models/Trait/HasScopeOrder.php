@@ -8,7 +8,7 @@ use Modules\Common\Entities\Language;
 
 trait HasScopeOrder
 {
-    public function scopeSetOrder(Builder $builder, Request $request): Builder
+    public function scopeSetOrder(Builder $builder): Builder
     {
         $model = $builder->getModel();
 
@@ -16,12 +16,7 @@ trait HasScopeOrder
             $sort = request('key_sort');
             $order = strtoupper(request('key_order')) === 'DESC' ? 'DESC' : 'ASC';
 
-            if (!is_null(request('key_lang')) && in_array($sort, $model::$jsonFields)) {
-                $languageCode = Language::$languageCodes[request('key_lang')];
-                return $builder->orderByRaw("JSON_UNQUOTE(JSON_EXTRACT($sort, '$.$languageCode')) $order");
-            } else {
-                return $builder->orderBy($sort, $order);
-            }
+            return $builder->orderBy($sort, $order);
         } else {
             return $builder;
         }

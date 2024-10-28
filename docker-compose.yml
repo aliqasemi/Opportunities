@@ -1,15 +1,19 @@
+version: '3'
 services:
     laravel.test:
         build:
-            context: ./Dockerfile
+            context: ./docker
             dockerfile: Dockerfile
             args:
                 WWWGROUP: '${WWWGROUP}'
-        image: shiamuslim
+        image: sail-8.2/app
+        container_name: opp-laravel
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         ports:
-            - '8099:8000'
+            - '${APP_PORT:-80}:80'
+            - '8000:8000'
+            - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
         environment:
             WWWUSER: '${WWWUSER}'
             LARAVEL_SAIL: 1
@@ -20,28 +24,26 @@ services:
             SUPERVISOR_PHP_COMMAND: "/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --server=swoole --host=0.0.0.0 --port=8000"
         volumes:
             - '.:/var/www/html'
-            - '/var/www/html/vendor'
+            - './docker/php/php.ini:/usr/local/etc/php/conf.d/99-custom.ini'
         networks:
-            - sail
+            - opp
         depends_on:
             - mysql
             - redis
-            - minio
-            - mongo
     mysql:
         image: 'mysql/mysql-server:8.0'
+        container_name: opp-mysql
         ports:
-            - '${FORWARD_DB_PORT:-3306}:3306'
+            - '${DB_PORT:-3306}:3306'
         environment:
             MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
-            MYSQL_ROOT_HOST: '%'
             MYSQL_DATABASE: '${DB_DATABASE}'
             MYSQL_USER: '${DB_USERNAME}'
             MYSQL_PASSWORD: '${DB_PASSWORD}'
         volumes:
-            - 'sail-mysql:/var/lib/mysql'
+            - 'opp-mysql:/var/lib/mysql'
         networks:
-            - sail
+            - opp
         healthcheck:
             test:
                 - CMD
@@ -50,32 +52,15 @@ services:
                 - '-p${DB_PASSWORD}'
             retries: 3
             timeout: 5s
-    #    postgres:
-    #        image: 'postgres:13'
-    #        ports:
-    #            - '${FORWARD_PG_PORT:-5432}:5432'
-    #        environment:
-    #            POSTGRES_DB: '${DB_PG_DATABASE}'
-    #            POSTGRES_USER: '${DB_PG_USERNAME}'
-    #            POSTGRES_PASSWORD: '${DB_PG_PASSWORD}'
-    #        volumes:
-    #            - 'sail-postgres:/var/lib/postgresql/data'
-    #        networks:
-    #            - sail
-    #        healthcheck:
-    #            test:
-    #                - CMD-SHELL
-    #                - pg_isready -U ${DB_PG_USERNAME}
-    #            retries: 3
-    #            timeout: 5s
     redis:
         image: 'redis:alpine'
+        container_name: opp-redis
         ports:
             - '${FORWARD_REDIS_PORT:-6379}:6379'
         volumes:
-            - 'sail-redis:/data'
+            - 'opp-redis:/data'
         networks:
-            - sail
+            - opp
         healthcheck:
             test:
                 - CMD
@@ -83,55 +68,11 @@ services:
                 - ping
             retries: 3
             timeout: 5s
-    minio:
-        image: 'minio/minio:latest'
-        ports:
-            - '${FORWARD_MINIO_PORT:-9000}:9000'
-            - '${FORWARD_MINIO_CONSOLE_PORT:-8900}:8900'
-        environment:
-            MINIO_ROOT_USER: sail
-            MINIO_ROOT_PASSWORD: password
-        volumes:
-            - 'sail-minio:/data/minio'
-        networks:
-            - sail
-        command: 'minio server /data/minio --console-address ":8900"'
-        healthcheck:
-            test:
-                - CMD
-                - curl
-                - '-f'
-                - 'http://localhost:9000/minio/health/live'
-            retries: 3
-            timeout: 5s
-    mongo:
-        image: 'mongo:7.0.3'
-        ports:
-            - '${FORWARD_MONGO_PORT:-27018}:27017'
-        environment:
-            MONGO_INITDB_ROOT_USERNAME: '${MONGO_INITDB_ROOT_USERNAME}'
-            MONGO_INITDB_ROOT_PASSWORD: '${MONGO_INITDB_ROOT_PASSWORD}'
-        restart: always
-        volumes:
-            - 'sail-mongo:/data/db'
-            - './docker-entrypoint-initmongodb.d:/docker-entrypoint-initdb.d'
-        networks:
-            - sail
-        healthcheck:
-            test: [ "CMD", "mongo", "--host", "localhost", "--port", "27017", "--eval", "db.runCommand({ ping: 1 })" ]
-            retries: 3
-            timeout: 5s
 networks:
-    sail:
+    opp:
         driver: bridge
 volumes:
-    sail-mysql:
+    opp-mysql:
         driver: local
-    #    sail-postgres:
-    #        driver: local
-    sail-redis:
-        driver: local
-    sail-minio:
-        driver: local
-    sail-mongo:
+    opp-redis:
         driver: local

@@ -1,3 +1,5 @@
+# Opportunities
+
 # Laravel Application Setup with Docker
 
 This guide will help you set up and run a Laravel application using Docker and Docker Compose. It covers starting the
@@ -69,4 +71,4 @@ docker-compose exec opp-larave php artisan db:seed --class=ItemsTableSeeder
 Open your web browser and navigate to 'http://localhost:yourPort/env/opportunities' to access the Laravel application.
 Replace yourPort with the port number you configured in the docker-compose.yml file.
 
-# Opportunities
+
