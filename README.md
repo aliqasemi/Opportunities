@@ -19,8 +19,8 @@ Ensure you have the following installed:
 Clone this repository to your local machine:
 
 ```bash
-git clone https://github.com/yourusername/your-laravel-app.git
-cd your-laravel-app
+git clone https://github.com/aliqasemi/Opportunities
+cd Opportunities
 ```
 
 ### 2. Configure Environment Variables
@@ -39,6 +39,7 @@ host points to the Docker service (e.g., DB_HOST=mysql if using MySQL with Docke
 Once the containers are running, install the PHP dependencies:
 
 ```bash
+docker-compose up -d
 docker-compose exec opp-laravel composer install
 ```
 
