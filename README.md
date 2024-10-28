@@ -68,7 +68,7 @@ docker-compose exec opp-larave php artisan db:seed --class=ItemsTableSeeder
 
 ### 7. Access the Application
 
-Open your web browser and navigate to 'http://localhost:yourPort/env/opportunities' to access the Laravel application.
+Open your web browser and navigate to 'http://localhost:yourPort/opportunities' to access the Laravel application.
 Replace yourPort with the port number you configured in the docker-compose.yml file.
 
 
